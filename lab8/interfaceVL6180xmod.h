@@ -26,6 +26,6 @@
 #define INTERFACEVL6180X_MODULE_EN_FONCTION 1
 
 int interfaceVL6180x_litUneDistance(float *Distance);
-int interfaceVL6810x_initialise(int fdp);
+int interfaceVL6810x_initialise(uint8_t fdp);
 
 #endif

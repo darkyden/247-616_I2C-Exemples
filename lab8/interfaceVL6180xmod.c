@@ -1,6 +1,7 @@
+#include "mainmodified.h"
 #include "interfaceVL6180xmod.h"
 #include <stdio.h>
-
+#include <linux/i2c-dev.h> //for IOCTL defs
 //pour des détails: https://www.st.com/resource/en/design_tip/dt0037-vl6180x-range-and-ambient-light-sensor-quick-setup-guide-stmicroelectronics.pdf
 
 
@@ -37,7 +38,7 @@ INTERFACEVL6810X_MESSAGE interfaceVL6810x_message[INTERFACEVL6180X_NOMBRE] =
 	{0x0016, 0x00} //*change fresh out of set status to 0
 };
 
-int fd;
+uint8_t fd;
 
 //fonctions privées
 //pas de fonctions privées
@@ -46,11 +47,11 @@ int fd;
 //pas de variables publiques
 
 //fonctions publiques
-int interfaceVL6180x_ecrit(int Registre, int Donnee)
+int interfaceVL6180x_ecrit(uint16_t Registre, uint8_t Donnee)
 {
-int message[3];
-	message[0] = (int)(Registre >> 8);
-	message[1] = (int)(Registre & 0xFF);
+uint8_t message[3];
+	message[0] = (uint8_t)(Registre >> 8);
+	message[1] = (uint8_t)(Registre & 0xFF);
 	message[2] = Donnee;
 
         int NombreDOctetsAEcrire = 3;
@@ -63,40 +64,40 @@ int message[3];
                 return -1;
         }
 
-	//if (piloteI2C1_ecritDesOctets(message, 3) < 0)
-	//{
-	//	printf("erreur: interfaceVL6180x_ecrit\n");
-	//	return -1;
-	//}
+	
 	return 0;
 }
 
-int interfaceVL6180x_lit(int Registre, int *Donnee)
+int interfaceVL6180x_lit(uint16_t Registre, uint8_t *Donnee)
 {
-int Commande[2];
-	Commande[0] = (int)(Registre >> 8);
-	Commande[1] = (int)Registre;
+uint8_t Commande[2];
+	Commande[0] = (uint8_t)(Registre >> 8);
+	Commande[1] = (uint8_t)Registre;
        
-        int NombreDOctetsALire = 2; 
-	
-	if (read(fd, &Commande, NombreDOctetsALire) != NombreDOctetsALire)
+        uint8_t NombreDOctetsALire = 1;
+	uint8_t LongueurDeLaCommande = 2;
+
+	if(write(fd,&Commande,LongueurDeLaCommande) != LongueurDeLaCommande)
+	{
+		printf("erreur : Écriture\n");
+		close(fd);
+		return -1;
+	}
+
+	if (read(fd, Donnee, NombreDOctetsALire) != NombreDOctetsALire)
         {
                 printf("erreur: Lecture I2C\n");
                 close(fd);
                 return -1;
         }
 
-	//if (piloteI2C1_litDesOctets(Commande, 2, Donnee, 1) < 0)
-	//{
-	//	printf("erreur: interfaceVL6180x_lit\n");
-	//	return -1;
-	//}
+	
 	return 0;
 }
 
 int interfaceVL6180x_litUneDistance(float *Distance)
 {
-int valeur;
+uint8_t valeur;
 	if (interfaceVL6180x_ecrit(0x18, 0x01) < 0)
 	{
 		printf("erreur: interfaceVL6180x_litUneDistance 1\n");
@@ -129,24 +130,24 @@ int valeur;
 	return 0;
 }
 
-int interfaceVL6810x_initialise(int fdp)
+int interfaceVL6810x_initialise(uint8_t fdp)
 {
-int index;
-int valeur;
-
+	uint8_t index;
+	uint8_t valeur;
 fd = fdp;
+	
 
-	//if (piloteI2C1_configureLAdresse(INTERFACEVL6180X_ADRESSE) < 0)
-	//{
-	//	printf("erreur: interfaceVL6810x_initialise 1\n");
-	//	return -1;
-	//}
+	if(ioctl(fd, I2C_SLAVE, INTERFACEVL6180X_ADRESSE) < 0)
+	{
+		printf("erreur: interfaceVL6810x_initialise 1\n");
+		return -1;
+	}
 
-  if (interfaceVL6180x_lit(0x16, &valeur) < 0)
-  {
-  	printf("erreur: interfaceVL6180x_initialise 2\n");
-    return -1;
-  }
+	if (interfaceVL6180x_lit(0x16, &valeur) < 0)
+	{
+		printf("erreur: interfaceVL6180x_initialise 2\n");
+		return -1;
+	}
 	if (valeur != 1)
 	{
 		printf("message interfaceVL6180x: le VL6180x va être reconfiguré\n");
