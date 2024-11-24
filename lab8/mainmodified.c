@@ -1,35 +1,4 @@
 
-// #include <unistd.h>
-// #include <stdint.h>
-// #include <stdio.h>
-// #include <sys/ioctl.h>
-// #include <linux/i2c-dev.h> //for IOCTL defs
-// #include <fcntl.h>
-// #include "interfaceVL6180xmod.h"
-
-// #define I2C_FICHIER "/dev/i2c-1" // fichier Linux representant le BUS #2
-// #define I2C_ADRESSE 0x29 // adresse du Device I2C VL6180
-
-// int main()
-// {
-	// int fdPortI2C;  // file descriptor I2C
-
-	// // Initialisation du port I2C, 
-	// fdPortI2C = open(I2C_FICHIER, O_RDWR); // ouverture du 'fichier', création d'un 'file descriptor' vers le port I2C
-	// if(fdPortI2C == -1)
-	// {
-		// printf("erreur: I2C initialisation step 1\n");
-		// return -1;
-	// }
-	
-	// interfaceVL6810x_initialise(I2C_ADRESSE,fdPortI2C);
-	
-	
-
-	// close(fdPortI2C); /// Fermeture du 'file descriptor'
-	// return 0;
-// }
-
 //#include <unistd.h>
 //#include <stdint.h>
 //#include <stdio.h>
