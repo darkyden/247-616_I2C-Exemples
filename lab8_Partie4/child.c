@@ -10,7 +10,7 @@ void cleanup() {
     unlink(PIPE_GRANDCHILD_TO_CHILD);
 }
 
-int Child_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     int pipe_p2c, pipe_c2g, pipe_g2c;
     char buffer[10];
     pid_t grandchild_pid;
@@ -30,15 +30,37 @@ int Child_main(int argc, char *argv[]) {
 
     // Ouverture du tuyau pour recevoir les commandes du père
     pipe_p2c = open(argv[1], O_RDONLY | O_NONBLOCK);
+     
+    if(pipe_p2c <0){
+         perror("Erreur d'ouverture du tuyau parent -> fils");
+	 exit(1);
+    }
 
+    pipe_c2g = open(PIPE_CHILD_TO_GRANDCHILD, O_WRONLY | O_NONBLOCK);
+if (pipe_c2g < 0) {
+    perror("[CHILD] Erreur d'ouverture du tuyau pour envoyer la commande au petit-fils");
+} else {
+    printf("[CHILD] Tuyau fils -> petit-fils ouvert avec succès.\n");
+    if (write(pipe_c2g, "START\n", 6) > 0) {
+        printf("[CHILD] Commande START envoyée au petit-fils avec succès.\n");
+    } else {
+        perror("[CHILD] Échec d'écriture de la commande START dans le tuyau");
+    }
+    close(pipe_c2g);
+}
     while (1) {
         if (read(pipe_p2c, buffer, sizeof(buffer)) > 0) {
-            if (strncmp(buffer, "START", 5) == 0) {
-                // Envoie une commande au petit-fils pour commencer les mesures
+
+          printf("[CHILD] Commande recu du pere : %s\n",buffer); //LOG
+            if (strncmp(buffer, "START", (size_t)5) == 0) {
+                printf("[CHILD] transfert de la commande START au petit-fils\n"); //LOG
+		// Envoie une commande au petit-fils pour commencer les mesures
                 pipe_c2g = open(PIPE_CHILD_TO_GRANDCHILD, O_WRONLY | O_NONBLOCK);
                 write(pipe_c2g, "START\n", 6);
                 close(pipe_c2g);
-            } else if (strncmp(buffer, "STOP", 4) == 0) {
+            } else if (strncmp(buffer, "STOP", (size_t)4) == 0) {
+
+                printf("[CHILD] transfert de la commande STOP au petit-fils\n"); //LOG
                 // Envoie une commande au petit-fils pour arrêter
                 pipe_c2g = open(PIPE_CHILD_TO_GRANDCHILD, O_WRONLY | O_NONBLOCK);
                 write(pipe_c2g, "STOP\n", 5);

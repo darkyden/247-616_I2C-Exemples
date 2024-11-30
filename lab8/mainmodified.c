@@ -44,7 +44,7 @@ int main()
             printf("Erreur : Lecture de la distance échouée\n");
         }
 
-        sleep(1); // Attente de 1 seconde avant la prochaine lecture
+        usleep(500000); // Attente de 1 seconde avant la prochaine lecture
     }
 
     close(fdPortI2C); // Fermeture du descripteur de fichier
